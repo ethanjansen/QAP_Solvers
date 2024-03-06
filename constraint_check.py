@@ -6,7 +6,6 @@ import sys
 np.set_printoptions(threshold=sys.maxsize)
 
 link = "https://coral.ise.lehigh.edu/wp-content/uploads/2014/07/data.d/esc16a.dat"
-# doesnt work with parsing: link = "https://coral.ise.lehigh.edu/wp-content/uploads/2014/07/data.d/chr12a.dat"
 
 # parse data from dat file
 n = pd.read_csv(link, sep=" ", header=None, nrows=1)[0][0]
@@ -19,20 +18,31 @@ B = df.iloc[n:].to_numpy(dtype=np.float32)
 ############# PSD Variable ############################
 Y = cp.Variable((m,m), PSD=True)
 
-############# Objective Function ######################
-# Lq = [[0, 0], [0, B kron A]]
-# Y = [[1, x^T], [x, xx^T]] -- will find with PSD solver
-Lq = np.kron(B, A)
-Lq = np.r_[[[0]*(m-1)], Lq]
-Lq = np.c_[[0]*m, Lq] # Lq
-
-###################### Constraints ############################
+############# Constraints ############################
 I = np.identity(n) # identity
 E = np.ones(shape=(n,n)) # ones matrix
 D = np.kron(I, E) + np.kron(E, I)
 D = np.r_[[[-2]*(m-1)], D]
 D = np.c_[[-2]*m, D]
 D[0,0] = 2*n # D
+
+# block-0-diagonal
+def b0(Y):
+    m = Y.shape[0] # assuming square
+    n = int(np.sqrt(m-1))
+    total = np.zeros(shape=(n,n), dtype=np.float32)
+    for i in range(1,m,n):
+        total += Y[i:i+n, i:i+n]
+    return(total)
+
+# off-0-diagonal
+def o0(Y):
+    m = Y.shape[0] # assuming square
+    n = int(np.sqrt(m-1))
+    total = np.zeros(shape=(n,n), dtype=np.float32)
+    for i in range(1,n+1):
+        total += Y[i:m:n, i:m:n]
+    return(total)
 
 # actual constraints
 constraints = [Y[0][0] == 1]
@@ -45,15 +55,7 @@ constraints += [cp.trace(D @ Y) == 0]
 PSDprob = cp.Problem(cp.Minimize(cp.trace(Lq @ Y)), constraints) # minimize tr(LqY) subject to the constraints
 PSDprob.solve(verbose=True)
 
-# Print results
+# Print result.
 print("The optimal value is ", PSDprob.value)
-#print("A solution Y is")
-#print(Y.value)
-
-y = 1.5
-f = open("QAP_PSD_SolverOut.csv", "w")
-f.write(str(PSDprob.value)+'\n')
-f.close()
-
-df = pd.DataFrame(Y.value)
-df.to_csv("QAP_PSD_SolverOut.csv", mode='a', header=False, index=False)
+print("A solution Y is")
+print(Y.value)
