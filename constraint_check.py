@@ -13,7 +13,7 @@ val = pd.read_csv(file, sep=",", header=None, nrows=1)[0][0]
 df = pd.read_csv(file, sep=",", header=None, skiprows=1)
 Y = df.to_numpy(dtype=np.float32)
 m = Y.shape[0]
-n = np.sqrt(m-1)
+n = int(np.sqrt(m-1))
 
 ###################### Setup ##############################
 
