@@ -2,23 +2,21 @@
 import cvxpy as cp
 import numpy as np
 import pandas as pd
+import math as mt
 import sys
 np.set_printoptions(threshold=sys.maxsize)
 
-link = "https://coral.ise.lehigh.edu/wp-content/uploads/2014/07/data.d/esc16a.dat"
+file = "QAP_PSD_SolverOut.csv"
 
 # parse data from dat file
-n = pd.read_csv(link, sep=" ", header=None, nrows=1)[0][0]
-m = n**2 + 1 # final size after expanding to R^{nxn+1}
-df = pd.read_csv(link, sep=" ", header=None, skiprows=1)
-A = df.iloc[:n].to_numpy(dtype=np.float32)
-B = df.iloc[n:].to_numpy(dtype=np.float32)
-# C = 0 for pure QAP
+val = pd.read_csv(file, sep=",", header=None, nrows=1)[0][0]
+df = pd.read_csv(file, sep=",", header=None, skiprows=1)
+Y = df.to_numpy(dtype=np.float32)
+m = Y.shape[0]
+n = np.sqrt(m-1)
 
-############# PSD Variable ############################
-Y = cp.Variable((m,m), PSD=True)
+###################### Setup ##############################
 
-############# Constraints ############################
 I = np.identity(n) # identity
 E = np.ones(shape=(n,n)) # ones matrix
 D = np.kron(I, E) + np.kron(E, I)
@@ -44,18 +42,42 @@ def o0(Y):
         total += Y[i:m:n, i:m:n]
     return(total)
 
-# actual constraints
-constraints = [Y[0][0] == 1]
-constraints += [cp.diag(Y) - Y[:,0] == np.zeros(m)]
-constraints += [cp.sum([Y[i:i+n, i:i+n] for i in range(1,m,n)]) == I]
-constraints += [cp.sum([Y[i:m:n, i:m:n] for i in range(1,n+1)]) == I]
-constraints += [cp.trace(D @ Y) == 0]
+############# Constraints ############################
+# Checks within precision??
+# Check Y is PSD
+# Check Y[0][0] == 1
+# Diag(Y) == Y[:,0]
+# Trace(D*Y) == 0
+# b0(Y) == I
+# o0(Y) == I
 
-################# Objective & Solve ####################
-PSDprob = cp.Problem(cp.Minimize(cp.trace(Lq @ Y)), constraints) # minimize tr(LqY) subject to the constraints
-PSDprob.solve(verbose=True)
+# Y[0][0] == 1
+print("Y[0][0] == 1: ", Y[0][0])
+print(mt.isclose(Y[0][0], 1, rel_tol=1e-6))
 
-# Print result.
-print("The optimal value is ", PSDprob.value)
-print("A solution Y is")
-print(Y.value)
+# Diag(Y) == Y[:,0]
+print("Diag(Y) == Y[:,0]:")
+print(np.isclose(Y[:,0], Y.diagonal, rtol=1e-6))
+
+# Trace(D*Y) == 0
+print("Trace(D*Y) == 0:")
+print(mt.isclose(np.trace(np.matmul(D, Y)), 0, rel_tol=1e-6))
+
+# b0(Y) == I
+print("b0(Y) == I:")
+print(np.isclose(b0(Y), I, rtol=1e-6))
+
+# o0(Y) == I
+print("o0(Y) == I:")
+print(np.isclose(o0(Y), I, rtol=1e-6))
+
+# Y is PSD
+print("Y is PSD:")
+try:
+    np.linalg.cholesky(Y)
+except LinAlgError:
+    print(False)
+else:
+    print(True)
+finally:
+    print("Done")
