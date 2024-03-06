@@ -12,8 +12,8 @@ link = "https://coral.ise.lehigh.edu/wp-content/uploads/2014/07/data.d/esc16a.da
 n = pd.read_csv(link, sep=" ", header=None, nrows=1)[0][0]
 m = n**2 + 1 # final size after expanding to R^{nxn+1}
 df = pd.read_csv(link, sep=" ", header=None, skiprows=1)
-A = df.iloc[:n].to_numpy(dtype=np.float32)
-B = df.iloc[n:].to_numpy(dtype=np.float32)
+A = df.iloc[:n].to_numpy(dtype=np.float64)
+B = df.iloc[n:].to_numpy(dtype=np.float64)
 # C = 0 for pure QAP
 
 ############# PSD Variable ############################
