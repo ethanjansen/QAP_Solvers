@@ -80,9 +80,10 @@ print(sym)
 print("Y has all nonnegative eignevalues:")
 pos_eigs = False
 try:
-    eigs = np.linalg.eigvals(Y)
+    eigs = np.linalg.eigvals(Y) # need to get all real parts (shouldnt be complex)
+    #print(eigs)
     pos_eigs = np.all(eigs >= -tol)
-    print(pos_eigs)
+    print(np.real(pos_eigs))
 except np.linalg.LinAlgError as e:
     print(repr(e))
     print(False)
