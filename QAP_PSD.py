@@ -42,12 +42,13 @@ Vhat = np.c_[np.ones(m)/n,Vhat]
 Vhat[0][0] = 1
 
 # actual constraints
-constraints = [Y[0][0] == 1]
+constraints = [Y == Vhat @ Z @ cp.trace(Vhat)]
+constraints += [Y[0][0] == 1]
 constraints += [cp.diag(Y) - Y[:,0] == np.zeros(m)]
 constraints += [cp.sum([Y[i:i+n, i:i+n] for i in range(1,m,n)]) == I]
 constraints += [cp.sum([Y[i:m:n, i:m:n] for i in range(1,n+1)]) == I]
 constraints += [cp.trace(D @ Y) == 0]
-constraints += [Y == Vhat @ Z @ cp.trace(Vhat)]
+
 
 ################# Objective & Solve ####################
 PSDprob = cp.Problem(cp.Minimize(cp.trace(Lq @ Y)), constraints) # minimize tr(LqY) subject to the constraints
