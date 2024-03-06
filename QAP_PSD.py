@@ -67,6 +67,6 @@ f.write(str(PSDprob.value)+'\n')
 f.close()
 
 print("Saving Y")
-Y = np.matmul(np.matmul(V, Z), V.T)
-df = pd.DataFrame(Y.value)
+Y = np.matmul(np.matmul(V, Z.value), V.T)
+df = pd.DataFrame(Y)
 df.to_csv("QAP_PSD_SolverOut.csv", mode='a', header=False, index=False)
