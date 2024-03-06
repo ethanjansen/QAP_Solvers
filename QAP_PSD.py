@@ -35,15 +35,15 @@ D = np.r_[[[-2]*(m-1)], D]
 D = np.c_[[-2]*m, D]
 D[0,0] = 2*n # D
 
-V = np.r_[np.identity(n-1), [-1*np.ones(n-1)]] # V
-Vhat = np.kron(V, V)
-Vhat = np.r_[[np.zeros(l-1)],Vhat]
-Vhat = np.c_[np.ones(m)/n,Vhat]
-Vhat[0][0] = 1
+Vhat = np.r_[np.identity(n-1), [-1*np.ones(n-1)]] # there V
+V = np.kron(Vhat, Vhat)
+V = np.r_[[np.zeros(l-1)],V]
+V = np.c_[np.ones(m)/n,V]
+V[0][0] = 1
 
 # changing D and Lq
-Lq = np.matmul(np.matmul(Vhat.T, Lq), Vhat)
-D = np.matmul(np.matmul(Vhat.T, D), Vhat)
+Lq = np.matmul(np.matmul(V.T, Lq), V)
+D = np.matmul(np.matmul(V.T, D), V)
 
 # actual constraints
 constraints = [(V @ Z @ V.T)[0][0] == 1]
