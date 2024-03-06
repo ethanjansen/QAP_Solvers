@@ -41,17 +41,20 @@ Vhat = np.r_[[np.zeros(l-1)],Vhat]
 Vhat = np.c_[np.ones(m)/n,Vhat]
 Vhat[0][0] = 1
 
+# changing D and Lq
+Lq = np.matmul(np.matmul(Vhat.T, Lq), Vhat)
+D = np.matmul(np.matmul(Vhat.T, D), Vhat)
+
 # actual constraints
-constraints = [Y == Vhat @ Z @ cp.trace(Vhat)]
-constraints += [Y[0][0] == 1]
-constraints += [cp.diag(Y) - Y[:,0] == np.zeros(m)]
-constraints += [cp.sum([Y[i:i+n, i:i+n] for i in range(1,m,n)]) == I]
-constraints += [cp.sum([Y[i:m:n, i:m:n] for i in range(1,n+1)]) == I]
-constraints += [cp.trace(D @ Y) == 0]
+constraints = [(V @ Z @ V.T)[0][0] == 1]
+constraints += [cp.diag(V @ Z @ V.T) - (V @ Z @ V.T)[:,0] == np.zeros(m)]
+constraints += [cp.sum([(V @ Z @ V.T)[i:i+n, i:i+n] for i in range(1,m,n)]) == I]
+constraints += [cp.sum([(V @ Z @ V.T)[i:m:n, i:m:n] for i in range(1,n+1)]) == I]
+constraints += [cp.trace(D @ Z) == 0]
 
 
 ################# Objective & Solve ####################
-PSDprob = cp.Problem(cp.Minimize(cp.trace(Lq @ Y)), constraints) # minimize tr(LqY) subject to the constraints
+PSDprob = cp.Problem(cp.Minimize(cp.trace(Lq @ Z)), constraints) # minimize tr(LqY) subject to the constraints
 PSDprob.solve(verbose=True)
 
 # Print results
@@ -59,10 +62,9 @@ print("The optimal value is ", PSDprob.value)
 #print("A solution Y is")
 #print(Y.value)
 
-y = 1.5
 f = open("QAP_PSD_SolverOut.csv", "w")
 f.write(str(PSDprob.value)+'\n')
 f.close()
 
-df = pd.DataFrame(Y.value)
+df = pd.DataFrame(Z.value)
 df.to_csv("QAP_PSD_SolverOut.csv", mode='a', header=False, index=False)
