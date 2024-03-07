@@ -5,7 +5,7 @@ import pandas as pd
 import sys
 np.set_printoptions(threshold=sys.maxsize)
 
-link = "https://coral.ise.lehigh.edu/wp-content/uploads/2014/07/data.d/esc16a.dat"
+link = "LAP.csv"
 # doesnt work with parsing: link = "https://coral.ise.lehigh.edu/wp-content/uploads/2014/07/data.d/chr12a.dat"
 
 # parse data from dat file
