@@ -19,7 +19,7 @@ X = cp.Variable((n,n))
 ###################### Constraints ############################
 e = np.ones(n) # row vector instead of column vector
 
-constraints = [X >> 0]
+constraints = [X >= 0]
 constraints += [e @ X == e]
 constraints += [e @ X.T == e]
 
