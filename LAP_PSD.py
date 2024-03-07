@@ -17,7 +17,7 @@ C = df.to_numpy(dtype=np.float64)
 X = cp.Variable((n,n))
 
 ###################### Constraints ############################
-eT = np.ones(n)
+e = np.ones(n) # row vector instead of column vector
 
 constraints = [X >> 0]
 constraints += [e @ X == e]
